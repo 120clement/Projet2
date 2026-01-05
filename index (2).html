@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz d’amis</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #673AB7, #311B92);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background: white;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #311B92;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        .question {
+            margin: 15px 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #673AB7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #512DA8;
+        }
+
+        .link-box {
+            background: #f3f0ff;
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-size: 14px;
+        }
+
+        .result {
+            font-size: 18px;
+            font-weight: bold;
+            color: #311B92;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== CRÉATEUR ===== -->
+<div class="container" id="createur">
+    <h1>Créer ton quiz 📝</h1>
+    <p>Réponds d’abord.  
+       Le lien généré sera partagé à tes amis.</p>
+
+    <div class="question">
+        <label>1️⃣ Quelle est ma couleur préférée ?</label>
+        <input type="text" id="c1">
+    </div>
+
+    <div class="question">
+        <label>2️⃣ Quel est mon plat préféré ?</label>
+        <input type="text" id="c2">
+    </div>
+
+    <div class="question">
+        <label>3️⃣ Quel est mon loisir préféré ?</label>
+        <input type="text" id="c3">
+    </div>
+
+    <button onclick="genererLien()">Générer le lien 🔗</button>
+</div>
+
+<!-- ===== PARTAGE ===== -->
+<div class="container" id="partage" style="display:none;">
+    <h1>Lien prêt 🎉</h1>
+    <p>Partage ce lien à tes amis 👇</p>
+
+    <div class="link-box" id="lienQuiz"></div>
+
+    <button onclick="partagerWhatsApp()">Partager sur WhatsApp</button>
+</div>
+
+<!-- ===== AMI ===== -->
+<div class="container" id="ami" style="display:none;">
+    <h1>Quiz d’amis 🎯</h1>
+
+    <div class="question">
+        <label>1️⃣ Couleur préférée ?</label>
+        <input type="text" id="a1">
+    </div>
+
+    <div class="question">
+        <label>2️⃣ Plat préféré ?</label>
+        <input type="text" id="a2">
+    </div>
+
+    <div class="question">
+        <label>3️⃣ Loisir préféré ?</label>
+        <input type="text" id="a3">
+    </div>
+
+    <button onclick="corriger()">Voir mon score</button>
+</div>
+
+<!-- ===== RÉSULTAT ===== -->
+<div class="container" id="resultat" style="display:none;">
+    <h1>Résultat ✅</h1>
+    <p class="result" id="score"></p>
+</div>
+
+<script>
+    let bonnesReponses = {};
+
+    function genererLien() {
+        let r1 = document.getElementById("c1").value.trim();
+        let r2 = document.getElementById("c2").value.trim();
+        let r3 = document.getElementById("c3").value.trim();
+
+        if (!r1 || !r2 || !r3) {
+            alert("Réponds à toutes les questions");
+            return;
+        }
+
+        // Encoder les réponses dans l'URL
+        let params = new URLSearchParams();
+        params.set("q1", btoa(r1.toLowerCase()));
+        params.set("q2", btoa(r2.toLowerCase()));
+        params.set("q3", btoa(r3.toLowerCase()));
+
+        let lien = window.location.origin + window.location.pathname + "?" + params.toString();
+
+        document.getElementById("lienQuiz").innerText = lien;
+        document.getElementById("createur").style.display = "none";
+        document.getElementById("partage").style.display = "block";
+    }
+
+    function partagerWhatsApp() {
+        let lien = document.getElementById("lienQuiz").innerText;
+        let message = "Teste à quel point tu me connais 😄👇\n" + lien;
+        window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank");
+    }
+
+    function chargerAmi() {
+        let params = new URLSearchParams(window.location.search);
+        if (params.has("q1")) {
+            bonnesReponses.q1 = atob(params.get("q1"));
+            bonnesReponses.q2 = atob(params.get("q2"));
+            bonnesReponses.q3 = atob(params.get("q3"));
+
+            document.getElementById("createur").style.display = "none";
+            document.getElementById("ami").style.display = "block";
+        }
+    }
+
+    function corriger() {
+        let score = 0;
+
+        if (document.getElementById("a1").value.toLowerCase().trim() === bonnesReponses.q1) score++;
+        if (document.getElementById("a2").value.toLowerCase().trim() === bonnesReponses.q2) score++;
+        if (document.getElementById("a3").value.toLowerCase().trim() === bonnesReponses.q3) score++;
+
+        document.getElementById("ami").style.display = "none";
+        document.getElementById("resultat").style.display = "block";
+        document.getElementById("score").innerText =
+            "Tu as obtenu " + score + " / 3 🎉";
+    }
+
+    chargerAmi();
+</script>
+
+</body>
+</html>
